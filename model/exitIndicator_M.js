@@ -11,7 +11,6 @@ const exit = async (_id) => {
     const db = getDb();
     return db.collection('currentIndicator').find({ _id: new mongodb.ObjectID(_id) }).next()
         .then(response => {
-            console.log("response: ", response)
             const index = response.intIndex;
             createIndicator_M.removeInterval(index);
             deleteCurrentIndicator(_id);
@@ -22,7 +21,6 @@ const exit = async (_id) => {
 
         })
         .catch(err => {
-            console.log(err)
         })
 }
 
@@ -32,7 +30,6 @@ const deleteCurrentIndicator = (coin_id) => {
         _id: new mongodb.ObjectID(coin_id)
     })
         .then((result) => {
-            console.log('Deleted indicator in currentIndicator collection')
         })
 }
 

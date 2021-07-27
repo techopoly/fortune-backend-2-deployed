@@ -39,7 +39,6 @@ const indicatorValue = async (req, res, next)=>{
     const indicator = req.query.indicator;
     const interval = req.query.interval;
     const interval_metric = req.query.interval_metric
-    console.log(symbol, indicator, interval);
     const response = await indicator_M.fetchRsi(symbol, indicator, interval, interval_metric);
     res.status(200).json({
        messsage : response.message,

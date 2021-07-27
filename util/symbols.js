@@ -10,7 +10,6 @@ const getSymbols = async()=>{
     symbolsArray.forEach(element => {
         justSymbol.push(element.baseAsset);
     });
-    console.log(justSymbol);
 
 }
 

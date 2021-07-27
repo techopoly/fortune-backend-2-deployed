@@ -5,7 +5,6 @@ const price_M = require('../model/price_M');
 const price_C = async (req, res, next)=>{
 
     const symbol = req.query.symbol;
-    console.log(symbol);
     const response = await price_M.fetchPrice(symbol);
     res.status(200).json({
         message: response.message,

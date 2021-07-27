@@ -11,7 +11,6 @@ const removeInterval = (num) => {
     if (intRef[num] == undefined) {
         message = 'interval reference doesnt exist '
     }
-    console.log(`interval reference index: ${num} `, message);
     clearInterval(intRef[num])
 }
 
@@ -51,7 +50,6 @@ class Indicator {
     save = async () => {
         const db = getDb();
         await db.collection('currentIndicator').insertOne(this)
-        // console.log('COULD NOT SAVE INDICATOR VALUE');
         return this._id;
     }
 
@@ -60,15 +58,13 @@ class Indicator {
         return axios.get(`https://api.taapi.io/${this.indicator}?secret=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlY2hvcG9seTQ0NEBnbWFpbC5jb20iLCJpYXQiOjE2MjQ0ODQxODcsImV4cCI6NzkzMTY4NDE4N30.rbbboPhxSQnO1AcF3KqVIsXXX-P7sO-Q38rCZCeKvqQ&exchange=binance&symbol=${this.symbol.toUpperCase()}/USDT&interval=${this.interval + this.interval_metric}`)
             .then((response) => {
                 let value = response.data.value;
-                console.log('indicator value: ', [this.indicator], value)
                 if (this.flag == 1) {
                     if (value >= 27.98) { // has to be 30                        
-                        // p1.send(msg, function (err, result) {
-                        //     if (err) {
-                        //         throw err
-                        //     }
-                        //     console.log(result)
-                        // })
+                        p1.send(msg, function (err, result) {
+                            if (err) {
+                                throw err
+                            }
+                        })
                         this.flag = 0;
                     }
                 } else {
@@ -80,8 +76,6 @@ class Indicator {
             })
             .catch(
                 (err) => {
-                    console.log('ERROR setting indicator');
-                    console.log(err.response.data)
                 }
             )
     }
@@ -91,32 +85,26 @@ class Indicator {
         return axios.get(`https://api.taapi.io/${this.indicator}?secret=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImlzbWFpbHl1c3VmNDQ3N0BnbWFpbC5jb20iLCJpYXQiOjE2MjcyMjgyMDMsImV4cCI6NzkzNDQyODIwM30.Lz-EC0DNJcRdyIs9EYarhrtncLIihJta5pTNI14v74U&exchange=binance&symbol=${this.symbol.toUpperCase()}/USDT&interval=${this.interval + this.interval_metric}`)
             .then((response) => {
                 let value = response.data;
-                console.log('indicator value: ', [this.indicator], value);
                 if (this.macdFlag == 1) {
                     if (value.valueMACD < value.valueMACDSignal) {
-                        console.log(value.valueMACD, value.valueMACDSignal);
                         this.macdFlag = 0;
                     }
                 }
                 else {
                     if (value.valueMACD > value.valueMACDSignal) {
-                        console.log(value.valueMACD, value.valueMACDSignal);
                         this.macdFlag = 1;
-                        // p1.send(msg, function (err, result) {
-                        //     if (err) {
-                        //         throw err
-                        //     }
-                        //     console.log(result)
-                        // })
+                        p1.send(msg, function (err, result) {
+                            if (err) {
+                                throw err
+                            }
+                        })
                     }
                 }
             })
-        // .catch(
-        //     (err) => {
-        //         console.log('ERROR setting indicator');
-        //         //console.log(err.response.data)
-        //     }
-        // )
+        .catch(
+            (err) => {
+            }
+        )
     }
 
     findAlgo = () => {
@@ -155,7 +143,6 @@ class Indicator {
         this.findAlgo();
         let lenght = intRef.length;  // stores the lenght at the moment when this function(startProcess) was first executed
         this.intIndex = lenght;
-        console.log('this.intIndex: ', this.intIndex);
         intRef[this.intIndex] = setInterval(this.algo, 1000 * 16);
         const _id = await this.save();
         return _id;
