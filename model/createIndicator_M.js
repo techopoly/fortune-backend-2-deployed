@@ -44,6 +44,7 @@ class Indicator {
         this.time = new Date();
         this.intIndex;
         this.flag = 0;
+        this.macdFlag = 0;
     }
 
 
@@ -55,19 +56,20 @@ class Indicator {
     }
 
 
-    algo = () => {
+    algoRsi = () => {
         return axios.get(`https://api.taapi.io/${this.indicator}?secret=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlY2hvcG9seTQ0NEBnbWFpbC5jb20iLCJpYXQiOjE2MjQ0ODQxODcsImV4cCI6NzkzMTY4NDE4N30.rbbboPhxSQnO1AcF3KqVIsXXX-P7sO-Q38rCZCeKvqQ&exchange=binance&symbol=${this.symbol.toUpperCase()}/USDT&interval=${this.interval + this.interval_metric}`)
             .then((response) => {
                 let value = response.data.value;
                 console.log('indicator value: ', [this.indicator], value)
                 if (this.flag == 1) {
-                    if (value >= 27.98) {
+                    if (value >= 27.98) { // has to be 30                        
                         // p1.send(msg, function (err, result) {
                         //     if (err) {
                         //         throw err
                         //     }
                         //     console.log(result)
                         // })
+                        this.flag = 0;
                     }
                 } else {
                     if (value < 28) {
@@ -82,6 +84,54 @@ class Indicator {
                     console.log(err.response.data)
                 }
             )
+    }
+
+    algoMacd = () => {
+
+        return axios.get(`https://api.taapi.io/${this.indicator}?secret=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImlzbWFpbHl1c3VmNDQ3N0BnbWFpbC5jb20iLCJpYXQiOjE2MjcyMjgyMDMsImV4cCI6NzkzNDQyODIwM30.Lz-EC0DNJcRdyIs9EYarhrtncLIihJta5pTNI14v74U&exchange=binance&symbol=${this.symbol.toUpperCase()}/USDT&interval=${this.interval + this.interval_metric}`)
+            .then((response) => {
+                let value = response.data;
+                console.log('indicator value: ', [this.indicator], value);
+                if (this.macdFlag == 1) {
+                    if (value.valueMACD < value.valueMACDSignal) {
+                        console.log(value.valueMACD, value.valueMACDSignal);
+                        this.macdFlag = 0;
+                    }
+                }
+                else {
+                    if (value.valueMACD > value.valueMACDSignal) {
+                        console.log(value.valueMACD, value.valueMACDSignal);
+                        this.macdFlag = 1;
+                        // p1.send(msg, function (err, result) {
+                        //     if (err) {
+                        //         throw err
+                        //     }
+                        //     console.log(result)
+                        // })
+                    }
+                }
+            })
+        // .catch(
+        //     (err) => {
+        //         console.log('ERROR setting indicator');
+        //         //console.log(err.response.data)
+        //     }
+        // )
+    }
+
+    findAlgo = () => {
+        this.algo;
+        switch (this.indicator) {
+            case 'rsi':
+                this.algo = this.algoRsi
+                break;
+
+            case 'macd':
+                this.algo = this.algoMacd
+                break;
+            default:
+                this.algo = this.algoRsi
+        }
     }
 
 
@@ -102,7 +152,7 @@ class Indicator {
         //     }
         //     console.log(result)
         // })
-
+        this.findAlgo();
         let lenght = intRef.length;  // stores the lenght at the moment when this function(startProcess) was first executed
         this.intIndex = lenght;
         console.log('this.intIndex: ', this.intIndex);
@@ -111,6 +161,7 @@ class Indicator {
         return _id;
     }
 }
+
 
 
 exports.Indicator = Indicator;
@@ -126,6 +177,6 @@ exports.removeInterval = removeInterval;
    algorithmn for every indicator
 2. we have to use same logic we used for createCoin to handle the intervarl references
 
-
-
+//api key-macd : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImlzbWFpbHl1c3VmNDQ3N0BnbWFpbC5jb20iLCJpYXQiOjE2MjcyMjgyMDMsImV4cCI6NzkzNDQyODIwM30.Lz-EC0DNJcRdyIs9EYarhrtncLIihJta5pTNI14v74U
+//api key-rsi : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlY2hvcG9seTQ0NEBnbWFpbC5jb20iLCJpYXQiOjE2MjQ0ODQxODcsImV4cCI6NzkzMTY4NDE4N30.rbbboPhxSQnO1AcF3KqVIsXXX-P7sO-Q38rCZCeKvqQ
 */

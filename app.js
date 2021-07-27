@@ -7,6 +7,9 @@ const price = require('./routes/price');
 const indicator = require('./routes/indicator');
 const getSymbols = require('./util/symbols');
 const mongoConnect = require('./util/database').mongoConnect;
+const indicator_M = require('./model/indicator_M');
+const createIndicator_M = require('./model/createIndicator_M');
+const exitIndicator = require('./model/exitIndicator_M');
 
 const app = express();
 
@@ -25,60 +28,41 @@ app.use((req, res, next) => {
 
 app.use(price);
 app.use(indicator)
-app.use('/', (req, res, next)=>{
+app.use('/', (req, res, next) => {
     res.status(200).json({
         message: 'path not found'
     })
-} )
+})
 
 
+const restartCreateIndicator = async (symbol, indicator, interval, interval_metric) => {
+    const indicatorObj = new createIndicator_M.Indicator(symbol, indicator, interval, interval_metric);
+    try {
+        const _id = await indicatorObj.startProcess();
+        return _id;
 
-const fetchIndicatorValue = () => {
-            return axios.get(`https://api.taapi.io/${this.indicator}?secret=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlY2hvcG9seTQ0NEBnbWFpbC5jb20iLCJpYXQiOjE2MjQ0ODQxODcsImV4cCI6NzkzMTY4NDE4N30.rbbboPhxSQnO1AcF3KqVIsXXX-P7sO-Q38rCZCeKvqQ&exchange=binance&symbol=${this.symbol.toUpperCase()}/USDT&interval=${this.interval+ this.interval_metric}`)
-                .then((response) => {
-                    currentPrice = response.data.price;
-                    if (currentPrice < threshold * peak) {
-                        console.log("DANGER");
-                        p1.send(msg, function (err, result) {
-                            if (err) {
-                                throw err
-                            }
-                            console.log(result)
-                        });
-                        p2.send(msg, function (err, result) {
-                            if (err) {
-                                throw err
-                            }
-                            console.log(result)
-                        });
+    } catch (err) {
+        console.log(err);
+    }
 
-                        // clearInterval(this.interval_1);
-                        removeInterval(this.intIndex);
-                        exitModel.deleteCurrentCoin(this._id);
+}
 
-                    }
-                    if (currentPrice > peak) {
-                        peak = currentPrice
-                        console.log("peak: " + peak);
-                    }
-                    console.log(this.symbol, "_currentPrice: " + currentPrice);
-                    return response
-                })
-                .catch(
-                    (err) => {
-                        console.log('ERROR GETTING COIN PRICE');
-                        console.log(err)
-                        // console.log(err)
-                    }
-                )
-        }
-
-
-
-
-
-mongoConnect(() => {
+mongoConnect(async () => {
     app.listen(process.env.PORT || 8050);
+    const allIndicators = await indicator_M.getCurrentIndicator();
+    if (allIndicators.length > 0) {
+        console.log('current indicator exists');
+        allIndicators.map(async (eachObj) => {
+            console.log(eachObj);
+            const { _id, symbol, indicator, interval, interval_metric } = eachObj;
+            await exitIndicator.exit(_id); // first remove interval then create new interval for new indicator. 
+            await restartCreateIndicator(symbol, indicator, interval, interval_metric);
+            console.log('Restarted and exited previous indicator');
+        })
+    }
+    else {
+        console.log('no current indicator exists')
+    }
 });
 
 

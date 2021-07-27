@@ -23,7 +23,7 @@ const fetchRsi = async (symbol, indicator, interval, interval_metric) => {
 }
 
 
-const getCurrentIndicator = () => {
+const getCurrentIndicator = async () => {
 
     const db = getDb();
     return db.collection('currentIndicator').find().toArray()

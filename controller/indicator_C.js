@@ -25,9 +25,8 @@ const createIndicator = async (req, res, next)=>{
 
 
 const exitIndicator = async (req, res, next)=>{
-
     const _id = req.query._id;
-    const response = exitIndicator_M.exit(_id);
+    const response = await exitIndicator_M.exit(_id);
     res.status(200).json({
         message: 'Indicator deleted', 
         response: response,
